@@ -1,0 +1,22 @@
+##set( $symbol_pound = '#' )
+##set( $symbol_dollar = '$' )
+##set( $symbol_escape = '\' )
+name:   ${classname}
+type:   PrimeData
+flow:   ${classname}Flow
+attributes:
+    - attribute:    ${artifactId}
+      type:         key
+states:
+    - name:         active
+      startState:   true
+    - name:         inactive
+      endState:     true
+security:
+    - name:     msgaccess
+      type:     unauthenticated
+      access:   read
+      parm:     ListAllEvent
+    - name:     roleaccess
+      type:     smartrole
+      access:   execute
