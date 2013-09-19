@@ -1,0 +1,20 @@
+##set( $symbol_pound = '#' )
+##set( $symbol_dollar = '$' )
+##set( $symbol_escape = '\' )
+name:       ${transition}
+type:       Transition
+flow:       ${data}Flow
+foreach:        ${data}|${event}
+actions:
+    - name:     deactivate
+      method:   deactivate
+      foreach:  ${data}|${event}
+      from:     active
+      to:       inactive
+callservices:
+    - name:     changeState
+      service:  AllFlows.TransitionServices.changeState
+      foreach:  ${data}|${event}
+      runAfter: deactivate
+      from:     active
+      to:       inactive

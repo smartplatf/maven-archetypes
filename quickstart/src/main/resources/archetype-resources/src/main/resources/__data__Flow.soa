@@ -1,0 +1,17 @@
+##set( $symbol_pound = '#' )
+##set( $symbol_dollar = '$' )
+##set( $symbol_escape = '\' )
+name:   ${data}Flow
+defaultEnable: all
+primeData:
+    - ${package}.${data}
+events:
+    - ${package}.${event}
+transitions:
+    - ${package}.${transition}
+features:
+    - name: all
+      artefacts:
+        - ${package}.${data}
+        - ${package}.${event}
+        - ${package}.${transition}
