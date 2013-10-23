@@ -14,6 +14,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+   <scm>
+        <connection>scm:git:git@github.com:smartplatf/maven-archetypes.git</connection>
+    </scm>
+
+
 	<distributionManagement>
 		<snapshotRepository>
 			<id>snapshots</id>
@@ -99,6 +104,15 @@
       <build>
 
         <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-plugin-plugin</artifactId>
+            <version>3.2</version>
+            <configuration>
+                <goalPrefix>plugin</goalPrefix>
+                <outputDirectory>target/org/smart/plugin/</outputDirectory>
+            </configuration>
+        </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-invoker-plugin</artifactId>
