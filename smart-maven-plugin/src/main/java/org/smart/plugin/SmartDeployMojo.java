@@ -66,7 +66,10 @@ public class SmartDeployMojo
         {
             clnt = new SecureSmartClient(port, server, "", "", flowsoa);
             clnt.authenticateAdmin(user, password);
-            clnt.deployJar(jarFile.getAbsolutePath(), flowsoa);
+            String str = jarFile.getAbsolutePath();
+            str = str.replaceAll("\\\\", "\\/");
+            System.out.println("File Name is: " + str);
+            clnt.deployJar(str, flowsoa);
         }
         catch ( Exception e )
         {
