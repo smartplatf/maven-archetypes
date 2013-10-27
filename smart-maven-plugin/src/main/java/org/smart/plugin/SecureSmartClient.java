@@ -70,7 +70,7 @@ public class SecureSmartClient extends SmartClient
     public AssertJSONResponse authenticate(String identity, String password, boolean admin)
         throws Exception
     {
-        AssertJSONResponse resp = post("Authenticate", "{'FlowAdmin':{'___smart_action___':'lookup', '___smart_value___':'Security'},'identity':'" +identity + "', 'password':'" + password + "', 'type':'custom'}");
+        AssertJSONResponse resp = postTo(_port, _server, "/" + _tenant + "/Security/Authenticate", "{'FlowAdmin':{'___smart_action___':'lookup', '___smart_value___':'Security'},'identity':'" +identity + "', 'password':'" + password + "', 'type':'custom'}", true);
         assertion().assertTrue(resp != null, "No Response");
 
         JSONArray resparr = resp.getAllResponses();

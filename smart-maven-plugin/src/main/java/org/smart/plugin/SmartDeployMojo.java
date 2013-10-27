@@ -68,6 +68,7 @@ public class SmartDeployMojo
             clnt.authenticateAdmin(user, password);
             String str = jarFile.getAbsolutePath();
             str = str.replaceAll("\\\\", "\\/");
+            str = "/" + str;
             System.out.println("File Name is: " + str);
             clnt.deployJar(str, flowsoa);
         }

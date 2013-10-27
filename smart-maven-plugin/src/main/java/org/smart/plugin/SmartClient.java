@@ -19,7 +19,7 @@ public class SmartClient
 {
     private SCShell _shell;
     protected String _server;
-    private String _tenant;
+    protected String _tenant;
     private String _flow;
     private String _soa;
     protected int _port;
