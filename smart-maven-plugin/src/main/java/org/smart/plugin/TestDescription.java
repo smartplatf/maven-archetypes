@@ -84,6 +84,8 @@ public class TestDescription
 
     private String event;
     private keydata postto;
+    private String postdatafromfile;
+    private String dataType;
     private Map<String, Object> postdata;
     private Map<String, Object> test;
 
@@ -92,6 +94,8 @@ public class TestDescription
     }
 
     public String getEvent() { return event; }
+    public String getPostDataFromFile() { return postdatafromfile; }
+    public String getDataType() { return dataType; }
     public void addKey(JSONObject json)
     {
         JSONObject jkey = new JSONObject();
@@ -131,8 +135,11 @@ public class TestDescription
         return val;
     }
 
-    private void addData(JSONObject json, Map data)
+    public void addData(JSONObject json, Map data)
     {
+        if (data == null)
+            return;
+
         for (Object key : data.keySet())
         {
             Object val = data.get(key);

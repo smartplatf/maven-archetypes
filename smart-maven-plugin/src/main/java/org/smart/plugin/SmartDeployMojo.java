@@ -55,6 +55,9 @@ public class SmartDeployMojo
     @Parameter( property = "maven.smart.flowsoa", required = true )
     private String flowsoa;
 
+    @Parameter( property = "maven.smart.addJars", defaultValue = "")
+    private String addJars;
+
     public void execute()
         throws MojoExecutionException
     {
@@ -66,11 +69,22 @@ public class SmartDeployMojo
         {
             clnt = new SecureSmartClient(port, server, "", "", flowsoa);
             clnt.authenticateAdmin(user, password);
+            String depjars = "";
+            String add = "";
+            if ((addJars != null) && (addJars.length() > 0))
+            {
+                depjars = addJars;
+                add = ",";
+            }
+
             String str = jarFile.getAbsolutePath();
             str = str.replaceAll("\\\\", "\\/");
             str = "/" + str;
-            System.out.println("File Name is: " + str);
-            clnt.deployJar(str, flowsoa);
+
+            depjars += add + str;
+
+            System.out.println("File Name is: " + depjars);
+            clnt.deployJar(depjars, flowsoa);
         }
         catch ( Exception e )
         {

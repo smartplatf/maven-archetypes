@@ -30,13 +30,19 @@ import net.sf.json.JSONArray;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 import org.anon.utilities.config.Format;
+import org.anon.utilities.crosslink.CrossLinkAny;
 
 import static org.anon.utilities.objservices.ObjectServiceLocator.*;
 import static org.anon.utilities.services.ServiceLocator.*;
@@ -80,7 +86,25 @@ public class SmartTestMojo
                 TestConfig cfg = tests.get(i); //execute in order
                 File[] files = cfg.getFiles(testLocation + "/test-classes/");
 
-                clnt.authenticate(cfg.getTestUser(), cfg.getTestPassword());
+                String tsttenant = cfg.getTenant();
+                String tstflow = cfg.getFlow();
+
+                SecureSmartClient useclnt = clnt;
+                boolean admin = false;
+
+                if ((tsttenant != null) || (tstflow != null))
+                {
+                    if (tsttenant == null)
+                        tsttenant = tenant;
+
+                    if (tstflow == null)
+                        tstflow = flow;
+
+                    useclnt = new SecureSmartClient(port, server, tsttenant, tstflow, "");
+                    admin = cfg.runAsAdmin();
+                }
+
+                useclnt.authenticate(cfg.getTestUser(), cfg.getTestPassword(), admin);
 
                 for (int j = 0; (files != null) && (j < files.length); j++)
                 {
@@ -89,26 +113,80 @@ public class SmartTestMojo
                     List<TestDescription> lst = tsts.getTests();
                     for (TestDescription desc : lst)
                     {
-                        JSONObject post = new JSONObject();
-                        desc.addKey(post);
-                        desc.addData(post);
-                        String poststr = post.toString();
-                        System.out.println("Posting: " + poststr + ":" + desc.getEvent());
-                        AssertJSONResponse resp = clnt.post(desc.getEvent(), poststr);
-                        JSONArray arr = resp.getAllResponses();
-                        assertion().assertNotNull(arr, "The test failed. Got an error response.");
-                        assertion().assertTrue(arr.size() > 0, "The test failed. No responses got.");
-                        JSONObject jobj = (JSONObject)arr.get(0);
-                        Map<String, Object> test = desc.getTest();
-                        testagainst(jobj, test);
+                        if ((desc.getPostDataFromFile() == null) || (desc.getPostDataFromFile().length() <= 0))
+                        {
+                            JSONObject post = new JSONObject();
+                            desc.addKey(post);
+                            desc.addData(post);
+                            test(post, desc, useclnt);
+                        }
+                        else
+                        {
+                            String path = files[j].getAbsolutePath();
+                            String nm = files[j].getName();
+
+                            int ind = path.indexOf(nm);
+                            path = path.substring(0, ind);
+                            path = path + desc.getPostDataFromFile();
+                            InputStream str = new FileInputStream(path);
+                            assertion().assertTrue((str != null), "Cannot find the file: " + path);
+                            BufferedReader in = new BufferedReader(new InputStreamReader(str));
+                            String line = in.readLine();
+                            while(line != null)
+                            {
+                                String[] vals = line.split("\\|\\|\\|");
+                                Map data = new HashMap();
+                                for (int l = 0; l < vals.length; l++)
+                                {
+                                    if (vals[l].trim().length() > 0)
+                                    {
+                                        String[] one = vals[l].split(":");
+                                        data.put(one[0], one[1]);
+                                    }
+                                }
+                                if (desc.getDataType() != null)
+                                {
+                                    URL tsturl = new URL("file://" + testLocation + "/test-classes/");
+                                    URLClassLoader ldr = new URLClassLoader(new URL[] { tsturl });
+                                    CrossLinkAny cl = new CrossLinkAny(desc.getDataType(), ldr);
+                                    data = (Map)cl.invoke("convert", new Class[] { Map.class }, new Object[] { data });
+                                    System.out.println("Data is: " + data);
+                                }
+                                JSONObject post = new JSONObject();
+                                desc.addKey(post);
+                                desc.addData(post, data);
+                                test(post, desc, useclnt);
+                                line = in.readLine();
+                            }
+
+                            in.close();
+                            str.close();
+                        }
                     }
                 }
+
+                if (cfg.getWait() > 0)
+                    Thread.currentThread().sleep(cfg.getWait());
             }
         }
         catch ( Exception e )
         {
             throw new MojoExecutionException( "Error executing tests " + flow + ":" + tenant, e );
         }
+    }
+
+    private void test(JSONObject post, TestDescription desc, SecureSmartClient useclnt)
+        throws Exception
+    {
+        String poststr = post.toString();
+        System.out.println("Posting: " + poststr + ":" + desc.getEvent());
+        AssertJSONResponse resp = useclnt.post(desc.getEvent(), poststr);
+        JSONArray arr = resp.getAllResponses();
+        assertion().assertNotNull(arr, "The test failed. Got an error response.");
+        assertion().assertTrue(arr.size() > 0, "The test failed. No responses got.");
+        JSONObject jobj = (JSONObject)arr.get(0);
+        Map<String, Object> test = desc.getTest();
+        testagainst(jobj, test);
     }
 
     private void testagainst(JSONArray arr, List coll, Object key)
@@ -151,6 +229,8 @@ public class SmartTestMojo
         }
         else if (check instanceof Map)
         {
+            if (val instanceof JSONArray)
+                val = ((JSONArray)val).get(0);
             assertion().assertTrue((val instanceof JSONObject), "The test failed. The value is not an object." + key);
             testagainst((JSONObject)val, (Map)check);
         }

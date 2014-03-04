@@ -52,7 +52,7 @@ public class SmartEnableMojo
     @Parameter( property = "maven.smart.flow", required = true, defaultValue="" )
     private String flow;
 
-    @Parameter( property = "maven.smart.features", required = true, defaultValue="'all'" )
+    @Parameter( property = "maven.smart.features", required = true, defaultValue="all" )
     private String features;
 
     public void execute()
@@ -64,7 +64,19 @@ public class SmartEnableMojo
         {
             clnt = new SecureSmartClient(port, server, tenant, flow, "");
             clnt.authenticateAdmin(user, password);
-            clnt.createTenant(tenant, flow, features);
+
+            String[] f = features.split(",");
+            String addf = "";
+            String add = "";
+            for (int i = 0; i < f.length; i++)
+            {
+                f[i] = "'" + f[i] + "'";
+                addf += add + f[i];
+                add = ",";
+            }
+
+            
+            clnt.createTenant(tenant, flow, addf);
         }
         catch ( Exception e )
         {

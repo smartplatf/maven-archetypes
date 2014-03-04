@@ -45,28 +45,46 @@ import java.io.File;
 
 public class TestConfig
 {
-
+    private String tenant;
+    private String flow;
     private String testuser;
     private String testpassword;
     private String files;
+    private boolean runasadmin;
+    private int wait;
 
     public TestConfig()
     {
         files = "**.json";
+        wait = -1;
     }
 
     public String getTestUser() { return testuser; }
     public String getTestPassword() { return testpassword; }
+    public String getTenant() { return tenant; }
+    public String getFlow() { return flow; }
+    public boolean runAsAdmin() { return runasadmin; }
+    public int getWait() { return wait; }
 
     public String toString()
     {
-        return testuser + ":" + testpassword + ":" + files;
+        return testuser + ":" + testpassword + ":" + files + ":" + tenant + ":" + flow;
     }
 
     public File[] getFiles(String dir)
     {
-        File file = new File(dir);
-        return file.listFiles(new TestFileFilter(files));
+        int index = files.lastIndexOf("/");
+        String f = files;
+        String lookin = dir;
+        if (index > 0)
+        {
+            String addPath = files.substring(0, index);
+            lookin = lookin + "/" + addPath;
+            f = files.substring(index + 1);
+            System.out.println("looking in directory: " + lookin + ":" + f);
+        }
+        File file = new File(lookin);
+        return file.listFiles(new TestFileFilter(f));
     }
 }
 
