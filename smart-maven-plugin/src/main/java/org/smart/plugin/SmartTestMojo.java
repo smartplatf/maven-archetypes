@@ -104,7 +104,8 @@ public class SmartTestMojo
                     admin = cfg.runAsAdmin();
                 }
 
-                useclnt.authenticate(cfg.getTestUser(), cfg.getTestPassword(), admin);
+                if (cfg.getTestUser() != null)
+                    useclnt.authenticate(cfg.getTestUser(), cfg.getTestPassword(), admin);
 
                 for (int j = 0; (files != null) && (j < files.length); j++)
                 {

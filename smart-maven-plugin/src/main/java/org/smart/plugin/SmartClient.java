@@ -93,7 +93,7 @@ public class SmartClient
         ResponseCollector collect = new ResponseCollector(wait);
         Rectifier rr = new Rectifier();
         rr.addStep(collect);
-        HTTPConfig ccfg = new HTTPConfig(port, false);
+        HTTPConfig ccfg = new HTTPConfig("default", port, false);
         ccfg.setClient();
         ccfg.setServer(server);
         ccfg.setRectifierInstinct(rr, new TestDataFactory());

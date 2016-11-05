@@ -85,6 +85,7 @@ public class SecureSmartClient extends SmartClient
         else
             _sessionId = v;
 
+        System.out.println("Set the session Id as: " + _sessionId);
         return resp;
     }
 
